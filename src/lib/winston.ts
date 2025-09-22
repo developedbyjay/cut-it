@@ -43,4 +43,4 @@ const logger = winston.createLogger({
   silent: process.env.NODE_ENV === "production" && transports.length === 0,
 });
 
-export { logger };
+export { logger, logtail };
