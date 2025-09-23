@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
-import { UserRequestBody } from "@/types";
+import { UserRequestBody } from "@/utils/types";
 import { User } from "@/models/user";
 import { AppError, catchAsync } from "@/utils/appError";
-import { generateMongoId } from "@/utils";
+import { generateTokens } from "@/lib/jwt";
 
 const register = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -12,11 +12,15 @@ const register = catchAsync(
         new AppError("You are not allowed to register as admin", 400)
       );
     }
+    const user = await User.create({ name, email, password, role });
+    const { accessToken } = await generateTokens(user._id, res);
 
-    const userId = generateMongoId()
-    
-
-   
+    res.status(201).json({
+      status: "success",
+      data: { user },
+      accessToken,
+    });
   }
 );
+
 export { register };

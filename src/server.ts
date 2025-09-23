@@ -9,7 +9,7 @@ import { AppError } from "@/utils/appError";
 import globalErrorController from "@/controllers/error";
 import express, { NextFunction, Request, Response } from "express";
 import { connectToDatabase, disconnectFromDatabase } from "./lib/mongoose";
-
+import { initializeRedisConnection, redisDisconnect } from "./redis/connection";
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -27,6 +27,7 @@ app.use(compression());
     app.use("/v1", v1Router);
 
     await connectToDatabase();
+    await initializeRedisConnection();
 
     app.listen(port, () => {
       logger.info(`App listening on port ${port} at http://localhost:${port}`);
@@ -52,6 +53,8 @@ const serverTermination = async (signal: NodeJS.Signals): Promise<void> => {
     logger.info("server shutdown", signal);
 
     await disconnectFromDatabase();
+    await redisDisconnect();
+    
     logtail.flush();
 
     process.exit(0);

@@ -57,17 +57,16 @@ const sendErrorProd = (
 };
 
 export default (error: AppError, res: Response) => {
-  if (ENVIRONMENT === "development") {
-    sendErrorDev(error, res);
-  } else {
-    if (error.name === "CastError") error = handleCastErrorDB(error);
+  // if (ENVIRONMENT === "development") {
+  //   sendErrorDev(error, res);
+  // } else {
+  if (error.name === "CastError") error = handleCastErrorDB(error);
 
-    if (error.code === 11000) error = handleDuplicateFieldsDB(error);
+  if (error.code === 11000) error = handleDuplicateFieldsDB(error);
 
-    if (error.name === "ValidationError")
-      error = handleValidationErrorDB(error);
-    if (error.name === "JsonWebTokenError") error = handleJWTError();
-    if (error.name === "TokenExpiredError") error = handleExpiredToken();
-    sendErrorProd(error, res);
-  }
+  if (error.name === "ValidationError") error = handleValidationErrorDB(error);
+  if (error.name === "JsonWebTokenError") error = handleJWTError();
+  if (error.name === "TokenExpiredError") error = handleExpiredToken();
+  sendErrorProd(error, res);
+  // }
 };

@@ -3,6 +3,8 @@ import { body } from "express-validator";
 import { register } from "@/controllers/v1/auth/register";
 import { validationError } from "@/middleware/validate";
 import { getRateLimit } from "@/lib/ratelimit";
+import { User } from "@/models/user";
+import { login } from "@/controllers/v1/auth/login";
 
 const router = Router();
 
@@ -15,7 +17,10 @@ router.post(
     .withMessage("Valid email is required")
     .normalizeEmail()
     .custom(async (email) => {
-      // Add custom email validation logic here if needed
+      const user = await User.exists({ email }).exec();
+      if (user) {
+        throw new Error("Email already in use");
+      }
       return true;
     }),
   body("password")
@@ -31,6 +36,48 @@ router.post(
     .withMessage("Role type is not valid"),
   validationError,
   register
+);
+
+router.post(
+  "/login",
+  getRateLimit("auth"),
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Valid email is required")
+    .normalizeEmail()
+    .custom(async (email) => {
+      const user = await User.exists({ email }).exec();
+      if (!user) {
+        throw new Error("Email not found");
+      }
+      return true;
+    }),
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long")
+    .custom(async (password, { req }) => {
+      const { email } = req.body;
+      const user = await User.findOne({ email })
+        .select("+password")
+        .lean()
+        .exec();
+      if (!user) {
+        throw new Error("User not found");
+      }
+      const isMatch = await user.comparePassword(password);
+      if (!isMatch) {
+        throw new Error("Invalid password");
+      }
+      return true;
+    }),
+  validationError,
+  login
 );
 
 export default router;

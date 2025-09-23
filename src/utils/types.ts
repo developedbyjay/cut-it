@@ -1,4 +1,5 @@
-import type { IUser } from "./models/user";
+import { Types } from "mongoose";
+import type { IUser } from "../models/user";
 
 export type UserRequestBody = Pick<
   IUser,
@@ -6,3 +7,11 @@ export type UserRequestBody = Pick<
 >;
 export type UserLoginRequestBody = Pick<IUser, "email" | "password">;
 export type PasswordResetRequestBody = Pick<IUser, "email">;
+
+export type TokenPayload = {
+  userId: Types.ObjectId;
+};
+
+export type ResetLinkPayload = {
+  email: string;
+};

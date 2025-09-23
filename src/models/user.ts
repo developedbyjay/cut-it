@@ -8,7 +8,7 @@ export interface IUser {
   role: "user" | "admin";
   totalVisitCount: number;
   passwordResetToken: string | null;
-  refreshToken: string | null;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<IUser>(
@@ -19,14 +19,11 @@ const userSchema = new Schema<IUser>(
     role: { type: String, enum: ["user", "admin"], default: "user" },
     totalVisitCount: { type: Number, default: 0 },
     passwordResetToken: { type: String, default: null },
-    refreshToken: { type: String, default: null, select: false },
   },
   {
     timestamps: true,
   }
 );
-
-userSchema.index({ email: 1 });
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
