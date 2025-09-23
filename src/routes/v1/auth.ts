@@ -7,6 +7,8 @@ import { register } from "@/controllers/v1/auth/register";
 import { authenticate } from "@/middleware/authentication";
 import { getRateLimit } from "@/lib/ratelimit";
 import { validationError } from "@/middleware/validate";
+import { refreshToken } from "@/controllers/v1/auth/refreshToken";
+import { forgotPassword } from "@/controllers/v1/auth/forgotPassword";
 
 const router = Router();
 
@@ -80,4 +82,24 @@ router.post(
 );
 
 router.delete("/logout", getRateLimit("basic"), authenticate, logout);
+
+router.get("/refreshToken", getRateLimit("basic"), refreshToken);
+
+router.post(
+  "/forgotPassword",
+  getRateLimit("basic"),
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Invalid email address")
+    .custom(async (email) => {
+      const userExists = await User.exists({ email }).exec();
+      if (!userExists) throw new Error("No user found with this email");
+    }),
+  validationError,
+  forgotPassword
+);
+
 export default router;

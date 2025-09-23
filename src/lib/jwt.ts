@@ -4,8 +4,42 @@ import { Types } from "mongoose";
 import { Response } from "express";
 import { encryptData } from "./encryption";
 import { setCache, deleteCache, getCache } from "@/redis";
-import { generateRedisKey, generateTTL } from "@/utils";
-import { TokenPayload } from "@/utils/types";
+import {
+  generateRedisUserKey,
+  generateRedisTokenKey,
+  generateTTL,
+} from "@/utils";
+import { ResetLinkPayload, TokenPayload } from "@/utils/types";
+
+export const generatePasswordResetTokenAndSaveInRedis = async (
+  payload: ResetLinkPayload
+): Promise<string> => {
+  const token = jwt.sign(
+    payload,
+    process.env.JWT_PASSWORD_RESET_SECRET as string,
+    {
+      expiresIn: "15m",
+    }
+  );
+
+  const encryptedToken = encryptData(token);
+
+  const { exp, email } = jwt.decode(token, { json: true }) as {
+    exp: number;
+    email: string;
+  };
+
+  const cachedToken = await getCache(generateRedisTokenKey(email));
+  if (cachedToken !== null) await deleteCache(generateRedisTokenKey(email));
+
+  await setCache(
+    generateRedisTokenKey(email),
+    encryptedToken,
+    generateTTL(exp)
+  );
+
+  return encryptedToken;
+};
 
 export const generateAccessToken = (payload: TokenPayload): string => {
   const token = jwt.sign(payload, process.env.JWT_ACCESS_SECRET as string, {
@@ -17,7 +51,7 @@ export const generateAccessToken = (payload: TokenPayload): string => {
 
 export const generateRefreshToken = (payload: TokenPayload): string => {
   const token = jwt.sign(payload, process.env.JWT_REFRESH_SECRET as string, {
-    expiresIn: "7d",
+    expiresIn: "7days",
     subject: "refreshToken",
   });
   return token;
@@ -32,9 +66,9 @@ export const generateTokens = async (
 
   const encryptedRefreshToken = encryptData(refreshToken);
 
-  const cachedToken = await getCache(generateRedisKey(userId.toString()));
+  const cachedToken = await getCache(generateRedisUserKey(userId.toString()));
   if (cachedToken !== null)
-    await deleteCache(generateRedisKey(userId.toString()));
+    await deleteCache(generateRedisUserKey(userId.toString()));
 
   const decoded = jwt.decode(refreshToken, { json: true }) as {
     exp: number;
@@ -42,16 +76,10 @@ export const generateTokens = async (
   };
 
   await setCache(
-    generateRedisKey(userId.toString()),
+    generateRedisUserKey(userId.toString()),
     encryptedRefreshToken,
     generateTTL(decoded.exp)
   );
-
-  // logger.info("Refresh Token Created", {
-  //   userId: userId._id,
-  //   refreshToken,
-  //   encryptedRefreshToken,
-  // });
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
@@ -76,4 +104,8 @@ export const verifyAccessToken = (token: string) => {
 
 export const verifyRefreshToken = (token: string) => {
   return jwt.verify(token, process.env.JWT_REFRESH_SECRET as string);
+};
+
+export const verifyPasswordResetToken = (token: string) => {
+  return jwt.verify(token, process.env.JWT_PASSWORD_RESET_SECRET as string);
 };

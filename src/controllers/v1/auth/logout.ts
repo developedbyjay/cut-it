@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { catchAsync } from "@/lib/appError";
 import { deleteCache, getCache } from "@/redis";
-import { generateRedisKey } from "@/utils";
+import { generateRedisUserKey } from "@/utils";
 
 const logout = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -11,10 +11,12 @@ const logout = catchAsync(
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
 
-    const cachedToken = await getCache(generateRedisKey(userId!.toString()));
+    const cachedToken = await getCache(
+      generateRedisUserKey(userId!.toString())
+    );
 
     if (cachedToken !== null)
-      await deleteCache(generateRedisKey(userId!.toString()));
+      await deleteCache(generateRedisUserKey(userId!.toString()));
 
     res.status(204).send();
   }

@@ -7,7 +7,6 @@ export interface IUser {
   password: string;
   role: "user" | "admin";
   totalVisitCount: number;
-  passwordResetToken: string | null;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -18,7 +17,6 @@ const userSchema = new Schema<IUser>(
     password: { type: String, required: true, select: false },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     totalVisitCount: { type: Number, default: 0 },
-    passwordResetToken: { type: String, default: null },
   },
   {
     timestamps: true,

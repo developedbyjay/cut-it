@@ -36,25 +36,7 @@ const rateLimitOpts = new Map<RateLimitType, Partial<Options>>( [
   ],
 ]);
 
-// function getRateLimitOptions(type: RateLimitType): Partial<Options> {
-//   switch (type) {
-//     case "basic":
-//       return {
-//         ...defaultLimitOpt,
-//         max: 100, // Limit each IP to 100 requests per windowMs
-//       };
-//     case "auth":
-//       return {
-//         ...defaultLimitOpt,
-//         max: 10, // Limit each IP to 10 requests per windowMs
-//       };
-//     case "passReset":
-//       return {
-//         ...defaultLimitOpt,
-//         max: 5, // Limit each IP to 5 requests per windowMs
-//       };
-//   }
-// }
+
 
 const getRateLimit = (type: RateLimitType): RateLimitRequestHandler => {
   const opts = rateLimitOpts.get(type);
