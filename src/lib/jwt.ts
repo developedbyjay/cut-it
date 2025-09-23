@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import { Types } from "mongoose";
-import { logger } from "./winston";
+
 import { Response } from "express";
 import { encryptData } from "./encryption";
-import { setCache, deleteCache } from "@/redis";
+import { setCache, deleteCache, getCache } from "@/redis";
 import { generateRedisKey, generateTTL } from "@/utils";
 import { TokenPayload } from "@/utils/types";
 
@@ -32,8 +32,9 @@ export const generateTokens = async (
 
   const encryptedRefreshToken = encryptData(refreshToken);
 
-  // Delete the existing refresh token from Redis if any
-  await deleteCache(generateRedisKey(userId.toString()));
+  const cachedToken = await getCache(generateRedisKey(userId.toString()));
+  if (cachedToken !== null)
+    await deleteCache(generateRedisKey(userId.toString()));
 
   const decoded = jwt.decode(refreshToken, { json: true }) as {
     exp: number;
@@ -46,11 +47,11 @@ export const generateTokens = async (
     generateTTL(decoded.exp)
   );
 
-  logger.info("Refresh Token Created", {
-    userId: userId._id,
-    refreshToken,
-    encryptedRefreshToken,
-  });
+  // logger.info("Refresh Token Created", {
+  //   userId: userId._id,
+  //   refreshToken,
+  //   encryptedRefreshToken,
+  // });
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,

@@ -5,7 +5,7 @@ import compression from "compression";
 import { router as v1Router } from "@/routes/v1";
 import { corsOption } from "@/lib/cors";
 import { logger, logtail } from "@/lib/winston";
-import { AppError } from "@/utils/appError";
+import { AppError } from "@/lib/appError";
 import globalErrorController from "@/controllers/error";
 import express, { NextFunction, Request, Response } from "express";
 import { connectToDatabase, disconnectFromDatabase } from "./lib/mongoose";
@@ -54,7 +54,7 @@ const serverTermination = async (signal: NodeJS.Signals): Promise<void> => {
 
     await disconnectFromDatabase();
     await redisDisconnect();
-    
+
     logtail.flush();
 
     process.exit(0);

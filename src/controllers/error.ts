@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { AppError } from "@/utils/appError";
+import { AppError } from "@/lib/appError";
 import { logger } from "@/lib/winston";
 
 const ENVIRONMENT = process.env.NODE_ENV || "development";

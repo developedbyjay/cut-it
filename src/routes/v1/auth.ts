@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { register } from "@/controllers/v1/auth/register";
-import { validationError } from "@/middleware/validate";
-import { getRateLimit } from "@/lib/ratelimit";
 import { User } from "@/models/user";
 import { login } from "@/controllers/v1/auth/login";
+import { logout } from "@/controllers/v1/auth/logout";
+import { register } from "@/controllers/v1/auth/register";
+import { authenticate } from "@/middleware/authentication";
+import { getRateLimit } from "@/lib/ratelimit";
+import { validationError } from "@/middleware/validate";
 
 const router = Router();
 
@@ -63,10 +65,7 @@ router.post(
     .withMessage("Password must be at least 8 characters long")
     .custom(async (password, { req }) => {
       const { email } = req.body;
-      const user = await User.findOne({ email })
-        .select("+password")
-        .lean()
-        .exec();
+      const user = await User.findOne({ email }).select("+password").exec();
       if (!user) {
         throw new Error("User not found");
       }
@@ -80,4 +79,5 @@ router.post(
   login
 );
 
+router.delete("/logout", getRateLimit("basic"), authenticate, logout);
 export default router;

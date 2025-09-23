@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { UserRequestBody } from "@/utils/types";
 import { User } from "@/models/user";
-import { AppError, catchAsync } from "@/utils/appError";
+import { AppError, catchAsync } from "@/lib/appError";
 import { generateTokens } from "@/lib/jwt";
 
 const register = catchAsync(
