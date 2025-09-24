@@ -10,6 +10,7 @@ import {
   generateTTL,
 } from "@/utils";
 import { ResetLinkPayload, TokenPayload } from "@/utils/types";
+import { logger } from "./winston";
 
 export const generatePasswordResetTokenAndSaveInRedis = async (
   payload: ResetLinkPayload
@@ -18,7 +19,7 @@ export const generatePasswordResetTokenAndSaveInRedis = async (
     payload,
     process.env.JWT_PASSWORD_RESET_SECRET as string,
     {
-      expiresIn: "15m",
+      expiresIn: "15min",
     }
   );
 
@@ -30,6 +31,7 @@ export const generatePasswordResetTokenAndSaveInRedis = async (
   };
 
   const cachedToken = await getCache(generateRedisTokenKey(email));
+  logger.info(`Cached token: ${cachedToken}`);
   if (cachedToken !== null) await deleteCache(generateRedisTokenKey(email));
 
   await setCache(

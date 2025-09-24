@@ -8,6 +8,8 @@ export type UserRequestBody = Pick<
 export type UserLoginRequestBody = Pick<IUser, "email" | "password">;
 export type PasswordResetRequestBody = Pick<IUser, "email">;
 
+export type TemplateParams = { [key: string]: string | number };
+
 export type TokenPayload = {
   userId: Types.ObjectId;
 };
