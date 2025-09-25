@@ -8,7 +8,6 @@ const validationError = (
   next: NextFunction
 ): void => {
   const errors = validationResult(req);
-
   if (!errors.isEmpty()) {
     return next(
       new AppError(
