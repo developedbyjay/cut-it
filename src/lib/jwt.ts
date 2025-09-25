@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import { Types } from "mongoose";
-
 import { Response } from "express";
 import { decryptData, encryptData } from "./encryption";
 import { setCache, deleteCache, getCache } from "@/redis";
@@ -32,7 +31,7 @@ export const generatePasswordResetTokenAndSaveInRedis = async (
   };
 
   const cachedToken = await getCache(generateRedisTokenKey(email));
-  logger.info(`Cached token: ${cachedToken}`);
+
   if (cachedToken !== null) await deleteCache(generateRedisTokenKey(email));
 
   await setCache(
@@ -48,6 +47,8 @@ export const getPasswordResetTokenFromRedisAndVerify = async (
   token: string
 ): Promise<{ email: string }> => {
   const decryptedToken = decryptData(token);
+  if (!decryptedToken)
+    throw new AppError("Token is invalid or it has expired", 401);
 
   const { email } = verifyPasswordResetToken(
     decryptedToken

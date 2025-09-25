@@ -1,13 +1,13 @@
 import { AppError, catchAsync } from "@/lib/appError";
 import type { Request, Response, NextFunction } from "express";
 import { User } from "@/models/user";
-import {
-  getPasswordResetTokenFromRedisAndVerify,
-} from "@/lib/jwt";
-import { logger } from "@/lib/winston";
+import { getPasswordResetTokenFromRedisAndVerify } from "@/lib/jwt";
+
 import { transporter } from "@/lib/nodemailer";
-import { RequestQuery, RequestBody, ResetLinkPayload } from "@/utils/types";
+import { RequestQuery, RequestBody } from "@/utils/types";
 import { passResetInfoTemplate } from "@/Templates/passwordResetInfo";
+import { generateRedisTokenKey } from "@/utils";
+import { deleteCache } from "@/redis";
 
 const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -25,7 +25,7 @@ const resetPassword = catchAsync(
     if (!user)
       return next(new AppError("User with the email is not available", 404));
 
-    if (user.password === password) {
+    if (await user.comparePassword(password)) {
       return next(
         new AppError(
           "New password must be different from the old password",
@@ -36,6 +36,7 @@ const resetPassword = catchAsync(
 
     user.password = password;
     await user.save();
+
     await transporter.sendMail({
       from: '"Cut-It" <noreply@cut-it.com>',
       to: email,
@@ -46,6 +47,8 @@ const resetPassword = catchAsync(
         currentYear: new Date().getFullYear(),
       }),
     });
+
+    await deleteCache(generateRedisTokenKey(email));
 
     res.status(200).json({
       status: "success",

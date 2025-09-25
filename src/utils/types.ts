@@ -4,7 +4,9 @@ import type { IUser } from "../models/user";
 export type UserRequestBody = Pick<
   IUser,
   "name" | "email" | "password" | "role"
->;
+  >;
+
+export type Role = "user" | "admin";
 export type UserLoginRequestBody = Pick<IUser, "email" | "password">;
 export type PasswordResetRequestBody = Pick<IUser, "email">;
 export type RequestQuery = { token: string };

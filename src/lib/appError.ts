@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 class AppError extends Error {
   public isOperational: boolean;
   public status: string;
-  public code?: number;
+  public code?: number | string;
 
   constructor(public message: string, public statusCode: number) {
     super(message);

@@ -4,6 +4,11 @@ import { logger } from "@/lib/winston";
 
 const ENVIRONMENT = process.env.NODE_ENV || "development";
 
+const handleBadDecrypt = (error: any) => {
+  const message = `Decryption failed. ${error.message}`;
+  return new AppError(message, 400);
+}
+
 const handleCastErrorDB = (error: any) => {
   const message = `Invalid ${error.path}: ${error.value}`;
   return new AppError(message, 400);
@@ -61,6 +66,8 @@ export default (error: AppError, res: Response) => {
   //   sendErrorDev(error, res);
   // } else {
   if (error.name === "CastError") error = handleCastErrorDB(error);
+
+  if (error.code === "ERR_OSSL_BAD_DECRYPT") error = handleBadDecrypt(error);
 
   if (error.code === 11000) error = handleDuplicateFieldsDB(error);
 
