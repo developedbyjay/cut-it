@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { Types } from "mongoose";
 
 import { Response } from "express";
-import { encryptData } from "./encryption";
+import { decryptData, encryptData } from "./encryption";
 import { setCache, deleteCache, getCache } from "@/redis";
 import {
   generateRedisUserKey,
@@ -11,6 +11,7 @@ import {
 } from "@/utils";
 import { ResetLinkPayload, TokenPayload } from "@/utils/types";
 import { logger } from "./winston";
+import { AppError } from "./appError";
 
 export const generatePasswordResetTokenAndSaveInRedis = async (
   payload: ResetLinkPayload
@@ -41,6 +42,25 @@ export const generatePasswordResetTokenAndSaveInRedis = async (
   );
 
   return encryptedToken;
+};
+
+export const getPasswordResetTokenFromRedisAndVerify = async (
+  token: string
+): Promise<{ email: string }> => {
+  const decryptedToken = decryptData(token);
+
+  const { email } = verifyPasswordResetToken(
+    decryptedToken
+  ) as ResetLinkPayload;
+
+  if (!email) throw new AppError("Token is invalid or it has expired", 401);
+
+  const cachedToken = await getCache(generateRedisTokenKey(email));
+
+  if (!cachedToken || cachedToken !== token)
+    throw new AppError("Token is invalid or does not exist", 401);
+
+  return { email };
 };
 
 export const generateAccessToken = (payload: TokenPayload): string => {
@@ -111,5 +131,3 @@ export const verifyRefreshToken = (token: string) => {
 export const verifyPasswordResetToken = (token: string) => {
   return jwt.verify(token, process.env.JWT_PASSWORD_RESET_SECRET as string);
 };
-
-// perfecto

@@ -19,6 +19,7 @@ const logout = catchAsync(
       await deleteCache(generateRedisUserKey(userId!.toString()));
 
     res.status(204).send();
+  
   }
 );
 export { logout };

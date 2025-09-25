@@ -4,7 +4,7 @@ import { User } from "@/models/user";
 import { AppError, catchAsync } from "@/lib/appError";
 import { generatePasswordResetTokenAndSaveInRedis } from "@/lib/jwt";
 import { transporter } from "@/lib/nodemailer";
-import { resetLinkTemplate } from "@/mailTemplates/resetLink";
+import { resetLinkTemplate } from "@/Templates/resetLinkTemp";
 
 const forgotPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -26,7 +26,7 @@ const forgotPassword = catchAsync(
         name: user.name,
         resetLink: `${
           process.env.FRONTEND_URL
-        }/reset-password?token=${encodeURIComponent(encryptedToken)}`,
+        }/reset-password?token=${encryptedToken}`,
         companyName: "Cut-It",
         currentYear: new Date().getFullYear(),
       }),
@@ -37,6 +37,7 @@ const forgotPassword = catchAsync(
       message: "Password reset link sent to email",
       data: {
         email,
+        token: encryptedToken,
       },
     });
   }

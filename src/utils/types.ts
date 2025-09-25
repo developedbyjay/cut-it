@@ -7,6 +7,8 @@ export type UserRequestBody = Pick<
 >;
 export type UserLoginRequestBody = Pick<IUser, "email" | "password">;
 export type PasswordResetRequestBody = Pick<IUser, "email">;
+export type RequestQuery = { token: string };
+export type RequestBody = Pick<IUser, "password">;
 
 export type TemplateParams = { [key: string]: string | number };
 
