@@ -30,6 +30,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+
 userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {

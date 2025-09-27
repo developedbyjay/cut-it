@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import type { IUser } from "../models/user";
+import type { ILink } from "../models/link";
 
 export type UserRequestBody = Pick<
   IUser,
@@ -27,4 +28,31 @@ export type TokenPayload = {
 
 export type ResetLinkPayload = {
   email: string;
+};
+
+export type LinkRequestBody = Pick<ILink, "title" | "destination" | "backHalf">;
+
+export type RequestQueryLinks = {
+  search?: string;
+  sortby?: string;
+  filter?: string;
+  offset?: number;
+  limit?: number;
+};
+
+export type LinkField =
+  | "title"
+  | "destination"
+  | "backHalf"
+  | "clicks"
+  | "createdAt"
+  | "updatedAt";
+
+export type GetLinkProps = {
+  baseUrl: string;
+  search?: string;
+  sortby?: string;
+  offset: number;
+  limit: number;
+  total: number;
 };

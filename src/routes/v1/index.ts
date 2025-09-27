@@ -1,6 +1,8 @@
 import { Router } from "express";
 import authRoute from "@/routes/v1/auth";
 import userRoute from "@/routes/v1/user";
+import linkRoute from "@/routes/v1/link";
+import redirectRoute from "@/routes/v1/redirect";
 
 const router = Router();
 
@@ -16,5 +18,6 @@ router.get("/", (req, res) => {
 
 router.use("/auth", authRoute);
 router.use("/users", userRoute);
-
+router.use("/links", linkRoute);
+router.use("/", redirectRoute);
 export { router };

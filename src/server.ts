@@ -65,3 +65,5 @@ const serverTermination = async (signal: NodeJS.Signals): Promise<void> => {
 
 process.on("SIGINT", serverTermination); // Handle Ctrl+C
 process.on("SIGTERM", serverTermination); // Handle termination signals
+ 
+// pnpm i bcrypt compression cookie-parser cors express express-validator jsonwebtoken mongoose -D @types/bcrypt @types/compression @types/cookie-parser @types/cors @types/express @types/jsonwebtoken ts-node tsconfig-paths tsx typescript
