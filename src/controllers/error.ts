@@ -62,9 +62,9 @@ const sendErrorProd = (
 };
 
 export default (error: AppError, res: Response) => {
-  // if (ENVIRONMENT === "development") {
-  //   sendErrorDev(error, res);
-  // } else {
+  if (ENVIRONMENT === "development") {
+    sendErrorDev(error, res);
+  } else {
   if (error.name === "CastError") error = handleCastErrorDB(error);
 
   if (error.code === "ERR_OSSL_BAD_DECRYPT") error = handleBadDecrypt(error);
@@ -75,5 +75,5 @@ export default (error: AppError, res: Response) => {
   if (error.name === "JsonWebTokenError") error = handleJWTError();
   if (error.name === "TokenExpiredError") error = handleExpiredToken();
   sendErrorProd(error, res);
-  // }
+  }
 };
